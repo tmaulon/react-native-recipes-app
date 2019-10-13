@@ -24,6 +24,7 @@ class Search extends React.Component {
       films: [],
       isLoading: false
     };
+    this._loadFilms = this._loadFilms.bind(this);
   }
 
   _loadFilms() {
@@ -60,6 +61,11 @@ class Search extends React.Component {
     );
   }
 
+  _displayDetailForFilm = idFilm => {
+    console.log("Display film with id " + idFilm);
+    this.props.navigation.navigate("FilmDetail", { idFilm: idFilm });
+  };
+
   _displayLoading() {
     if (this.state.isLoading) {
       return (
@@ -84,7 +90,7 @@ class Search extends React.Component {
         <FilmList
           films={this.state.films}
           navigation={this.props.navigation}
-          loadFilms={this._loadFilms()}
+          loadFilms={this._loadFilms}
           page={this.page}
           totalPages={this.totalPages}
         />
