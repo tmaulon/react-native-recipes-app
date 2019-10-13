@@ -17,9 +17,9 @@ import { getFilmsFromApiWithSearchedText } from "../API/TMDBApi";
 class Search extends React.Component {
   constructor(props) {
     super(props);
-    this.searchedText = ""; // Initialisation de notre donnée searchedText en dehors du state
-    this.page = 0; // Compteur pour connaître la page courante
-    this.totalPages = 0; // Nombre de pages totales pour savoir si on a atteint la fin des retours de l'API TMDB
+    this.searchedText = "";
+    this.page = 0;
+    this.totalPages = 0;
     this.state = {
       films: [],
       isLoading: false
@@ -29,15 +29,14 @@ class Search extends React.Component {
 
   _loadFilms() {
     if (this.searchedText.length > 0) {
-      this.setState({ isLoading: true }); // Lancement du chargement
-      // Seulement si le texte recherché n'est pas vide
+      this.setState({ isLoading: true });
       getFilmsFromApiWithSearchedText(this.searchedText, this.page + 1).then(
         data => {
           this.page = data.page;
           this.totalPages = data.total_pages;
           this.setState({
             films: [...this.state.films, ...data.results],
-            isLoading: false // Arrêt du chargement
+            isLoading: false
           });
         }
       );
@@ -45,7 +44,7 @@ class Search extends React.Component {
   }
 
   _searchTextInputChanged(text) {
-    this.searchedText = text; // Modification du texte recherché à chaque saisie de texte, sans passer par le setState comme avant
+    this.searchedText = text;
   }
 
   _searchFilms() {
@@ -71,7 +70,6 @@ class Search extends React.Component {
       return (
         <View style={styles.loading_container}>
           <ActivityIndicator size="large" />
-          {/* Le component ActivityIndicator possède une propriété size pour définir la taille du visuel de chargement : small ou large. Par défaut size vaut small, on met donc large pour que le chargement soit bien visible */}
         </View>
       );
     }
@@ -93,6 +91,7 @@ class Search extends React.Component {
           loadFilms={this._loadFilms}
           page={this.page}
           totalPages={this.totalPages}
+          favoriteList={false} // Ici j'ai simplement ajouté un booléen à false pour indiquer qu'on n'est pas dans le cas de l'affichage de la liste des films favoris. Et ainsi pouvoir déclencher le chargement de plus de films lorsque l'utilisateur scrolle.
         />
         {this._displayLoading()}
       </View>

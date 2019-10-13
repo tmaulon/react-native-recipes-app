@@ -1,9 +1,9 @@
-// Navigation/Navigation.js
+// Navigation/Navigations.js
 
 import React from "react";
 import { StyleSheet, Image } from "react-native";
-import { createStackNavigator } from "react-navigation-stack";
 import { createAppContainer } from "react-navigation";
+import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import Search from "../Components/Search";
 import FilmDetail from "../Components/FilmDetail";
@@ -16,7 +16,18 @@ const SearchStackNavigator = createStackNavigator({
       title: "Rechercher"
     }
   },
+  FilmDetail: {
+    screen: FilmDetail
+  }
+});
 
+const FavoritesStackNavigator = createStackNavigator({
+  Favorites: {
+    screen: Favorites,
+    navigationOptions: {
+      title: "Favoris"
+    }
+  },
   FilmDetail: {
     screen: FilmDetail
   }
@@ -38,7 +49,7 @@ const MoviesTabNavigator = createBottomTabNavigator(
       }
     },
     Favorites: {
-      screen: Favorites,
+      screen: FavoritesStackNavigator,
       navigationOptions: {
         tabBarIcon: () => {
           return (
@@ -53,8 +64,8 @@ const MoviesTabNavigator = createBottomTabNavigator(
   },
   {
     tabBarOptions: {
-      activeBackgroundColor: "#ddd",
-      inactiveBackgroundColor: "#fff",
+      activeBackgroundColor: "#DDDDDD",
+      inactiveBackgroundColor: "#FFFFFF",
       showLabel: false,
       showIcon: true
     }

@@ -1,4 +1,4 @@
-// Components/Search.js
+// Components/FilmList.js
 
 import React from "react";
 import { StyleSheet, FlatList } from "react-native";
@@ -14,7 +14,7 @@ class FilmList extends React.Component {
   }
 
   _displayDetailForFilm = idFilm => {
-    console.log(`Display film with id ${idFilm}`);
+    console.log("Display film " + idFilm);
     this.props.navigation.navigate("FilmDetail", { idFilm: idFilm });
   };
 
@@ -24,7 +24,6 @@ class FilmList extends React.Component {
         style={styles.list}
         data={this.props.films}
         extraData={this.props.favoritesFilm}
-        // On utilise la prop extraData pour indiquer à notre FlatList que d’autres données doivent être prises en compte si on lui demande de se re-rendre
         keyExtractor={item => item.id.toString()}
         renderItem={({ item }) => (
           <FilmItem
@@ -35,14 +34,16 @@ class FilmList extends React.Component {
               ) !== -1
                 ? true
                 : false
-            }
+            } // Bonus pour différencier les films déjà présent dans notre state global et qui n'ont donc pas besoin d'être récupérés depuis l'API
             displayDetailForFilm={this._displayDetailForFilm}
           />
         )}
         onEndReachedThreshold={0.5}
         onEndReached={() => {
-          if (this.props.page < this.props.totalPages) {
-            // On vérifie qu'on n'a pas atteint la fin de la pagination (totalPages) avant de charger plus d'éléments
+          if (
+            !this.props.favoriteList &&
+            this.props.page < this.props.totalPages
+          ) {
             this.props.loadFilms();
           }
         }}
