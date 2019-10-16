@@ -8,7 +8,8 @@ import {
   Button,
   Text,
   FlatList,
-  ActivityIndicator
+  ActivityIndicator,
+  SafeAreaView
 } from "react-native";
 import FilmItem from "./FilmItem";
 import FilmList from "./FilmList";
@@ -77,24 +78,26 @@ class Search extends React.Component {
 
   render() {
     return (
-      <View style={styles.main_container}>
-        <TextInput
-          style={styles.textinput}
-          placeholder="Titre du film"
-          onChangeText={text => this._searchTextInputChanged(text)}
-          onSubmitEditing={() => this._searchFilms()}
-        />
-        <Button title="Rechercher" onPress={() => this._searchFilms()} />
-        <FilmList
-          films={this.state.films}
-          navigation={this.props.navigation}
-          loadFilms={this._loadFilms}
-          page={this.page}
-          totalPages={this.totalPages}
-          favoriteList={false} // Ici j'ai simplement ajouté un booléen à false pour indiquer qu'on n'est pas dans le cas de l'affichage de la liste des films favoris. Et ainsi pouvoir déclencher le chargement de plus de films lorsque l'utilisateur scrolle.
-        />
-        {this._displayLoading()}
-      </View>
+      <SafeAreaView style={styles.main_container}>
+        <View style={styles.main_container}>
+          <TextInput
+            style={styles.textinput}
+            placeholder="Titre du film"
+            onChangeText={text => this._searchTextInputChanged(text)}
+            onSubmitEditing={() => this._searchFilms()}
+          />
+          <Button title="Rechercher" onPress={() => this._searchFilms()} />
+          <FilmList
+            films={this.state.films}
+            navigation={this.props.navigation}
+            loadFilms={this._loadFilms}
+            page={this.page}
+            totalPages={this.totalPages}
+            favoriteList={false} // Ici j'ai simplement ajouté un booléen à false pour indiquer qu'on n'est pas dans le cas de l'affichage de la liste des films favoris. Et ainsi pouvoir déclencher le chargement de plus de films lorsque l'utilisateur scrolle.
+          />
+          {this._displayLoading()}
+        </View>
+      </SafeAreaView>
     );
   }
 }
