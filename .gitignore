@@ -11,4 +11,4 @@ npm-debug.*
 web-build/
 web-report/
 package-lock.*
-yarn.lock
+yarn.*
