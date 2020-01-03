@@ -1,5 +1,5 @@
-export const APP_ID = "365b729d";
-export const APP_KEY = "ae6aed4ed3889cfcc1c6ebb8c36c19af";
+export const APP_ID = "";
+export const APP_KEY = "";
 
 /**
  * Documentation url : https://developer.edamam.com/edamam-docs-recipe-api
