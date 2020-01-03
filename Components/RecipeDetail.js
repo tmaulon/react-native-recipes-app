@@ -1,4 +1,4 @@
-// Components/FilmDetail.js
+// Components/RecipeDetail.js
 
 import React from "react";
 import {
@@ -12,23 +12,21 @@ import {
   Share,
   Platform
 } from "react-native";
-import { getFilmDetailFromApi, getImageFromApi } from "../API/TMDBApi";
-import moment from "moment";
-import numeral from "numeral";
+import { getRecipeDetailFromApi } from "../API/RecipeSearchAPi";
 import { connect } from "react-redux";
 import EnlargeShrink from "../Animations/EnlargeShrink";
 
-class FilmDetail extends React.Component {
+class RecipeDetail extends React.Component {
   static navigationOptions = ({ navigation }) => {
     const { params } = navigation.state;
-    // On accède à la fonction shareFilm et au film via les paramètres qu'on a ajouté à la navigation
-    if (params.film != undefined && Platform.OS === "ios") {
+    // On accède à la fonction shareRecipe et au recipe via les paramètres qu'on a ajouté à la navigation
+    if (params.recipe != undefined && Platform.OS === "ios") {
       return {
         // On a besoin d'afficher une image, il faut donc passe par une Touchable une fois de plus
         headerRight: (
           <TouchableOpacity
             style={styles.share_touchable_headerrightbutton}
-            onPress={() => params.shareFilm()}
+            onPress={() => params.shareRecipe()}
           >
             <Image
               style={styles.share_image}
@@ -43,34 +41,33 @@ class FilmDetail extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      film: undefined,
+      recipe: { recipe: undefined },
       isLoading: false
     };
-    // Ne pas oublier de binder la fonction _shareFilm sinon, lorsqu'on va l'appeler depuis le headerRight de la navigation, this.state.film sera undefined et fera planter l'application
-    this._shareFilm = this._shareFilm.bind(this);
-
+    // Ne pas oublier de binder la fonction _shareRecipe sinon, lorsqu'on va l'appeler depuis le headerRight de la navigation, this.state.recipe sera undefined et fera planter l'application
+    this._shareRecipe = this._shareRecipe.bind(this);
     this._toggleFavorite = this._toggleFavorite.bind(this);
   }
 
-  // Fonction pour faire passer la fonction _shareFilm et le film aux paramètres de la navigation. Ainsi on aura accès à ces données au moment de définir le headerRight
+  // Fonction pour faire passer la fonction _shareRecipe et le recipe aux paramètres de la navigation. Ainsi on aura accès à ces données au moment de définir le headerRight
   _updateNavigationParams() {
     this.props.navigation.setParams({
-      shareFilm: this._shareFilm,
-      film: this.state.film
+      shareRecipe: this._shareRecipe,
+      recipe: { recipe: this.state.recipe.recipe }
     });
   }
 
-  // Dès que le film est chargé, on met à jour les paramètres de la navigation (avec la fonction _updateNavigationParams) pour afficher le bouton de partage
+  // Dès que le recipe est chargé, on met à jour les paramètres de la navigation (avec la fonction _updateNavigationParams) pour afficher le bouton de partage
   componentDidMount() {
-    const favoriteFilmIndex = this.props.favoritesFilm.findIndex(
-      item => item.id === this.props.navigation.state.params.idFilm
+    const favoriteRecipeUri = this.props.favoritesRecipe.findIndex(
+      item => item.recipe.uri === this.props.navigation.state.params.uri
     );
-    if (favoriteFilmIndex !== -1) {
-      // Film déjà dans nos favoris, on a déjà son détail
+    if (favoriteRecipeUri !== -1) {
+      // recipe déjà dans nos favoris, on a déjà son détail
       // Pas besoin d'appeler l'API ici, on ajoute le détail stocké dans notre state global au state de notre component
       this.setState(
         {
-          film: this.props.favoritesFilm[favoriteFilmIndex]
+          recipe: this.props.favoritesRecipe[favoriteRecipeUri]
         },
         () => {
           this._updateNavigationParams();
@@ -78,14 +75,14 @@ class FilmDetail extends React.Component {
       );
       return;
     }
-    // Le film n'est pas dans nos favoris, on n'a pas son détail
+    // Le recipe n'est pas dans nos favoris, on n'a pas son détail
     // On appelle l'API pour récupérer son détail
     this.setState({ isLoading: true });
-    getFilmDetailFromApi(this.props.navigation.state.params.idFilm).then(
+    getRecipeDetailFromApi(this.props.navigation.state.params.uri).then(
       data => {
         this.setState(
           {
-            film: data,
+            recipe: { recipe: data[0] },
             isLoading: false
           },
           () => {
@@ -107,21 +104,20 @@ class FilmDetail extends React.Component {
   }
 
   _toggleFavorite() {
-    const action = { type: "TOGGLE_FAVORITE", value: this.state.film };
+    const action = { type: "TOGGLE_FAVORITE", value: this.state.recipe.recipe };
     this.props.dispatch(action);
   }
 
   _displayFavoriteImage() {
     var sourceImage = require("../Images/ic_favorite_border.png");
-    var shouldEnlarge = false; // Par défault, si le film n'est pas en favoris, on veut qu'au clic sur le bouton, celui-ci s'agrandisse => shouldEnlarge à true
+    var shouldEnlarge = false;
     if (
-      this.props.favoritesFilm.findIndex(
-        item => item.id === this.state.film.id
+      this.props.favoritesRecipe.findIndex(
+        item => item.uri === this.state.recipe.recipe.uri
       ) !== -1
     ) {
-      // Film dans nos favoris
       sourceImage = require("../Images/ic_favorite.png");
-      shouldEnlarge = true; // Si le film est dans les favoris, au clic sur le bouton, celui-ci se rétrécis => shouldEnlarge à false
+      shouldEnlarge = true;
     }
     return (
       <EnlargeShrink shouldEnlarge={shouldEnlarge}>
@@ -130,72 +126,40 @@ class FilmDetail extends React.Component {
     );
   }
 
-  _displayFilm() {
-    const { film } = this.state;
-    if (film != undefined) {
+  _displayrecipe() {
+    const { recipe } = this.state.recipe;
+    if (recipe != undefined) {
       return (
         <ScrollView style={styles.scrollview_container}>
-          <Image
-            style={styles.image}
-            source={{ uri: getImageFromApi(film.backdrop_path) }}
-          />
-          <Text style={styles.title_text}>{film.title}</Text>
+          <Image style={styles.image} source={{ uri: recipe.image }} />
+          <Text style={styles.title_text}>{recipe.label}</Text>
           <TouchableOpacity
             style={styles.favorite_container}
             onPress={() => this._toggleFavorite()}
           >
             {this._displayFavoriteImage()}
           </TouchableOpacity>
-          <Text style={styles.description_text}>{film.overview}</Text>
-          <Text style={styles.default_text}>
-            Sorti le {moment(new Date(film.release_date)).format("DD/MM/YYYY")}
-          </Text>
-          <Text style={styles.default_text}>
-            Note : {film.vote_average} / 10
-          </Text>
-          <Text style={styles.default_text}>
-            Nombre de votes : {film.vote_count}
-          </Text>
-          <Text style={styles.default_text}>
-            Budget : {numeral(film.budget).format("0,0[.]00 $")}
-          </Text>
-          <Text style={styles.default_text}>
-            Genre(s) :{" "}
-            {film.genres
-              .map(function(genre) {
-                return genre.name;
-              })
-              .join(" / ")}
-          </Text>
-          <Text style={styles.default_text}>
-            Companie(s) :{" "}
-            {film.production_companies
-              .map(function(company) {
-                return company.name;
-              })
-              .join(" / ")}
-          </Text>
         </ScrollView>
       );
     }
   }
 
-  _shareFilm() {
-    const { film } = this.state;
+  _shareRecipe() {
+    const { recipe } = this.state;
     Share.share({
-      title: film.title,
-      message: film.overview
+      title: recipe.label,
+      message: "message"
     });
   }
 
   _displayFloatingActionButton() {
-    const { film } = this.state;
-    if (film != undefined && Platform.OS === "android") {
-      // uniquement sur android et lorsque le film est chargé
+    const { recipe } = this.state;
+    if (recipe != undefined && Platform.OS === "android") {
+      // uniquement sur android et lorsque le recipe est chargé
       return (
         <TouchableOpacity
           style={styles.share_touchable_floatingactionbutton}
-          onPress={() => this._shareFilm()}
+          onPress={() => this._shareRecipe()}
         >
           <Image
             style={styles.share_image}
@@ -210,7 +174,7 @@ class FilmDetail extends React.Component {
     return (
       <View style={styles.main_container}>
         {this._displayLoading()}
-        {this._displayFilm()}
+        {this._displayrecipe()}
         {this._displayFloatingActionButton()}
       </View>
     );
@@ -290,8 +254,8 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
   return {
-    favoritesFilm: state.favoritesFilm
+    favoritesRecipe: state.favoritesRecipe
   };
 };
 
-export default connect(mapStateToProps)(FilmDetail);
+export default connect(mapStateToProps)(RecipeDetail);

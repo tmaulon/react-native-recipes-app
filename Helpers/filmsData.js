@@ -1,4 +1,4 @@
-// Helpers/filmsData.js
+// Helpers/recipesData.js
 
 export default data = [
   {

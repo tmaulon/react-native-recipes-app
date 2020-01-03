@@ -6,9 +6,8 @@ import { createAppContainer } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import Search from "../Components/Search";
-import FilmDetail from "../Components/FilmDetail";
+import RecipeDetail from "../Components/RecipeDetail";
 import Favorites from "../Components/Favorites";
-import Test from "../Components/Test";
 
 const SearchStackNavigator = createStackNavigator({
   Search: {
@@ -17,24 +16,24 @@ const SearchStackNavigator = createStackNavigator({
       title: "Rechercher"
     }
   },
-  FilmDetail: {
-    screen: FilmDetail
+  RecipeDetail: {
+    screen: RecipeDetail
   }
 });
 
-const FavoritesStackNavigator = createStackNavigator({
-  Favorites: {
-    screen: Favorites,
-    navigationOptions: {
-      title: "Favoris"
-    }
-  },
-  FilmDetail: {
-    screen: FilmDetail
-  }
-});
+// const FavoritesStackNavigator = createStackNavigator({
+//   Favorites: {
+//     screen: Favorites,
+//     navigationOptions: {
+//       title: "Favoris"
+//     }
+//   },
+//   RecipeDetail: {
+//     screen: RecipeDetail
+//   }
+// });
 
-const MoviesTabNavigator = createBottomTabNavigator(
+const RecipesTabNavigator = createBottomTabNavigator(
   {
     // Test: {
     //   screen: Test
@@ -51,20 +50,20 @@ const MoviesTabNavigator = createBottomTabNavigator(
           );
         }
       }
-    },
-    Favorites: {
-      screen: FavoritesStackNavigator,
-      navigationOptions: {
-        tabBarIcon: () => {
-          return (
-            <Image
-              source={require("../Images/ic_favorite.png")}
-              style={styles.icon}
-            />
-          );
-        }
-      }
     }
+    // Favorites: {
+    //   screen: FavoritesStackNavigator,
+    //   navigationOptions: {
+    //     tabBarIcon: () => {
+    //       return (
+    //         <Image
+    //           source={require("../Images/ic_favorite.png")}
+    //           style={styles.icon}
+    //         />
+    //       );
+    //     }
+    //   }
+    // }
   },
   {
     tabBarOptions: {
@@ -83,4 +82,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default createAppContainer(MoviesTabNavigator);
+export default createAppContainer(SearchStackNavigator);

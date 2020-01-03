@@ -6,41 +6,39 @@ import {
   View,
   TextInput,
   Button,
-  Text,
-  FlatList,
   ActivityIndicator,
   SafeAreaView
 } from "react-native";
-import FilmItem from "./FilmItem";
-import FilmList from "./FilmList";
-import { getFilmsFromApiWithSearchedText } from "../API/TMDBApi";
+import RecipesList from "./RecipesList";
+import { getRecipesFromApiWithSearchedText } from "../API/RecipeSearchAPi";
 
 class Search extends React.Component {
   constructor(props) {
     super(props);
     this.searchedText = "";
-    this.page = 0;
+    this.minPageNumber = 0;
+    this.lastPageNumber = 0;
     this.totalPages = 0;
     this.state = {
-      films: [],
+      recipes: [],
       isLoading: false
     };
-    this._loadFilms = this._loadFilms.bind(this);
+    this._loadRecipes = this._loadRecipes.bind(this);
   }
 
-  _loadFilms() {
+  _loadRecipes() {
     if (this.searchedText.length > 0) {
       this.setState({ isLoading: true });
-      getFilmsFromApiWithSearchedText(this.searchedText, this.page + 1).then(
-        data => {
-          this.page = data.page;
-          this.totalPages = data.total_pages;
-          this.setState({
-            films: [...this.state.films, ...data.results],
-            isLoading: false
-          });
-        }
-      );
+      console.log(this.searchedText);
+      getRecipesFromApiWithSearchedText(this.searchedText).then(data => {
+        this.minPageNumber = data.from;
+        this.lastPageNumber = data.to;
+        this.totalPages = data.count;
+        this.setState({
+          recipes: [...this.state.recipes, ...data.hits],
+          isLoading: false
+        });
+      });
     }
   }
 
@@ -48,21 +46,22 @@ class Search extends React.Component {
     this.searchedText = text;
   }
 
-  _searchFilms() {
-    this.page = 0;
+  _searchRecipes() {
+    this.minPageNumber = 0;
+    this.lastPageNumber = 0;
     this.totalPages = 0;
     this.setState(
       {
-        films: []
+        recipes: []
       },
       () => {
-        this._loadFilms();
+        this._loadRecipes();
       }
     );
   }
 
-  _displayDetailForFilm = idFilm => {
-    this.props.navigation.navigate("FilmDetail", { idFilm: idFilm });
+  _displayDetailForRecipe = uri => {
+    this.props.navigation.navigate("RecipeDetail", { uri: uri });
   };
 
   _displayLoading() {
@@ -81,18 +80,19 @@ class Search extends React.Component {
         <View style={styles.main_container}>
           <TextInput
             style={styles.textinput}
-            placeholder="Titre du film"
+            placeholder="Nom d'un ingrédient"
             onChangeText={text => this._searchTextInputChanged(text)}
-            onSubmitEditing={() => this._searchFilms()}
+            onSubmitEditing={() => this._searchRecipes()}
           />
-          <Button title="Rechercher" onPress={() => this._searchFilms()} />
-          <FilmList
-            films={this.state.films}
+          <Button title="Rechercher" onPress={() => this._searchRecipes()} />
+          <RecipesList
+            recipes={this.state.recipes}
             navigation={this.props.navigation}
-            loadFilms={this._loadFilms}
-            page={this.page}
+            loadrecipes={this._loadRecipes}
+            minPageNumber={this.minPageNumber}
+            lastPageNumber={this.lastPageNumber}
             totalPages={this.totalPages}
-            favoriteList={false} // Ici j'ai simplement ajouté un booléen à false pour indiquer qu'on n'est pas dans le cas de l'affichage de la liste des films favoris. Et ainsi pouvoir déclencher le chargement de plus de films lorsque l'utilisateur scrolle.
+            favoriteList={false}
           />
           {this._displayLoading()}
         </View>
