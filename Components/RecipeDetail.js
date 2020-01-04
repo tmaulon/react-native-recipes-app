@@ -10,14 +10,16 @@ import {
   Image,
   TouchableOpacity,
   Share,
-  Platform
+  Platform,
+  Animated
 } from "react-native";
 import { getRecipeDetailFromApi } from "../API/RecipeSearchAPi";
 import { connect } from "react-redux";
 import EnlargeShrink from "../Animations/EnlargeShrink";
 
 class RecipeDetail extends React.Component {
-  static navigationOptions = ({ navigation }) => {
+  /*
+   static navigationOptions = ({ navigation }) => {
     const { params } = navigation.state;
     // On accède à la fonction shareRecipe et au recipe via les paramètres qu'on a ajouté à la navigation
     if (params.recipe != undefined && Platform.OS === "ios") {
@@ -170,12 +172,207 @@ class RecipeDetail extends React.Component {
     }
   }
 
+   */
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      recipe: undefined,
+      isLoading: true,
+      scrollOffset: new Animated.Value(0)
+    };
+  }
+
+  _displayLoading() {
+    if (this.state.isLoading) {
+      return (
+        <View style={styles.loading_container}>
+          <ActivityIndicator size="large" />
+        </View>
+      );
+    }
+  }
+
+  _displayRecipe() {
+    const { scrollOffset } = this.state;
+    const expandedHeaderHeight = 400;
+    const collapsedHeaderHeight = 64;
+    const titleHeight = 44;
+    const scrollSpan = expandedHeaderHeight - collapsedHeaderHeight;
+    // Utilisation d'Animated.event pour mettre à jour scrollOffset lors de l'évènement onScroll
+    const scrollEvent = Animated.event(
+      [{ nativeEvent: { contentOffset: { y: this.state.scrollOffset } } }],
+      { useNativeDriver: true }
+    );
+
+    if (this.state.recipe != undefined) {
+      const hour = parseInt(this.state.recipe.totalTime / 60);
+      const minutes = this.state.recipe.totalTime % 60;
+      return (
+        <Animated.ScrollView
+          // Mis à jour de scrollOffset sur l'évènement onScroll
+          onScroll={scrollEvent}
+          // scrollEventThrottle={1} est nécessaire afin d'être notifié de tous les évènements de défilement
+          scrollEventThrottle={1}
+        >
+          <Animated.View
+            style={{
+              height: expandedHeaderHeight,
+              zIndex: 100,
+              overflow: "hidden",
+              position: "relative",
+              // Déplacement du header vers le haut afin de réduire sa hauteur
+              transform: [
+                {
+                  translateY: Animated.subtract(
+                    scrollOffset,
+                    scrollOffset.interpolate({
+                      inputRange: [0, scrollSpan],
+                      outputRange: [0, scrollSpan],
+                      extrapolate: "clamp"
+                    })
+                  )
+                }
+              ]
+            }}
+          >
+            <Animated.Image
+              style={[
+                styles.image_header,
+                {
+                  transform: [
+                    {
+                      translateY: scrollOffset.interpolate({
+                        inputRange: [0, scrollSpan],
+                        outputRange: [0, scrollSpan / 2],
+                        extrapolate: "clamp"
+                      })
+                    }
+                  ]
+                }
+              ]}
+              source={{ uri: this.state.recipe.image }}
+            />
+            <Animated.View
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  backgroundColor: "black",
+                  // Apparition d'un overlay noir semi-transparent
+                  opacity: scrollOffset.interpolate({
+                    inputRange: [scrollSpan / 2, scrollSpan],
+                    outputRange: [0, 0.85],
+                    extrapolate: "clamp"
+                  })
+                }
+              ]}
+            />
+            <Animated.View
+              style={{
+                position: "absolute",
+                left: 30,
+                bottom: 100,
+                flex: 1,
+                width: "80%",
+                // Déplacement du titre vers le haut afin de le faire apparaitre progressivement
+                transform: [
+                  {
+                    translateY: scrollOffset.interpolate({
+                      inputRange: [scrollSpan, scrollSpan + titleHeight],
+                      outputRange: [titleHeight, 0],
+                      extrapolate: "clamp"
+                    })
+                  }
+                ]
+              }}
+            >
+              <Animated.Text
+                style={{
+                  fontSize: 35,
+                  fontWeight: "bold",
+                  color: "white"
+                }}
+              >
+                {this.state.recipe.label}
+              </Animated.Text>
+            </Animated.View>
+          </Animated.View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              paddingTop: 50,
+              paddingHorizontal: 30
+            }}
+          >
+            <View style={{ alignItems: "center" }}>
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  fontSize: 16,
+                  marginBottom: 10,
+                  color: "#40B89F"
+                  // color: "#58FFC0"
+                }}
+              >
+                Temps de préparation
+              </Text>
+              <Text>
+                {hour !== 0 ? `${hour}h ` : ""}
+                {minutes !== 0 ? `${minutes}mn` : ""}
+              </Text>
+            </View>
+            <View style={{ alignItems: "center" }}>
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  fontSize: 16,
+                  marginBottom: 10,
+                  color: "#40B89F"
+                  // color: "#58FFC0"
+                }}
+              >
+                Nombre de parts
+              </Text>
+              <Text>{this.state.recipe.yield}</Text>
+            </View>
+          </View>
+        </Animated.ScrollView>
+      );
+    }
+  }
+
+  componentDidMount() {
+    console.log("Component FilmDetail monté");
+    getRecipeDetailFromApi(this.props.navigation.getParam("uri")).then(data => {
+      console.log(data);
+      this.setState({
+        recipe: data[0], // return an array : [{...}] with the recipe object inside
+        isLoading: false
+      });
+    });
+  }
+
   render() {
+    console.log("Component FilmDetail rendu");
+    console.log("Film détail : ", this.props.navigation);
+
     return (
       <View style={styles.main_container}>
+        {/* <Text> */}
+        {/* Détail de la recette :
+          {this.props.navigation.getParam("uri") */}
+        {/* ou */}
+        {/* this.props.navigation.state.params.uri */}
+        {/* } */}
+        {/* </Text> */}
         {this._displayLoading()}
+        {this._displayRecipe()}
+        {/*
         {this._displayrecipe()}
-        {this._displayFloatingActionButton()}
+        {this._displayFloatingActionButton()} */}
       </View>
     );
   }
@@ -197,8 +394,12 @@ const styles = StyleSheet.create({
   scrollview_container: {
     flex: 1
   },
+  image_header: {
+    width: "100%",
+    height: "100%"
+  },
   image: {
-    height: 169,
+    height: 500,
     margin: 5
   },
   title_text: {
@@ -252,10 +453,11 @@ const styles = StyleSheet.create({
   }
 });
 
-const mapStateToProps = state => {
-  return {
-    favoritesRecipe: state.favoritesRecipe
-  };
-};
+// const mapStateToProps = state => {
+//   return {
+//     favoritesRecipe: state.favoritesRecipe
+//   };
+// };
 
-export default connect(mapStateToProps)(RecipeDetail);
+// export default connect(mapStateToProps)(RecipeDetail);
+export default RecipeDetail;
