@@ -36,7 +36,7 @@ const FavoritesStackNavigator = createStackNavigator({
   Favorites: {
     screen: Favorites,
     navigationOptions: {
-      title: "Rechercher une recette",
+      title: "Mes recettes",
       headerStyle: {
         backgroundColor: colors.turquoiseGreen
       },
