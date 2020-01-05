@@ -7,42 +7,33 @@ import {
   Text,
   ActivityIndicator,
   ScrollView,
-  SectionList,
   Image,
   TouchableOpacity,
   Share,
   Platform,
-  Animated,
-  Button
+  Animated
 } from "react-native";
 import { getRecipeDetailFromApi } from "../API/RecipeSearchAPi";
 import { connect } from "react-redux";
-import EnlargeShrink from "../Animations/EnlargeShrink";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import MaterialCommunityIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
 import { colors } from "../Helpers/Colors";
 import { ProgressChart } from "react-native-chart-kit";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp
-} from "react-native-responsive-screen";
 import { Dimensions } from "react-native";
 const screenWidth = Dimensions.get("window").width;
-const screenHeight = Dimensions.get("window").height;
 
 class RecipeDetail extends React.Component {
-  /*
-   static navigationOptions = ({ navigation }) => {
+  static navigationOptions = ({ navigation }) => {
     const { params } = navigation.state;
-    // On accède à la fonction shareRecipe et au recipe via les paramètres qu'on a ajouté à la navigation
+    // On accède à la fonction shareRecipe et à la recette via les paramètres qu'on a ajouté à la navigation
     if (params.recipe != undefined && Platform.OS === "ios") {
       return {
         // On a besoin d'afficher une image, il faut donc passe par une Touchable une fois de plus
         headerRight: (
           <TouchableOpacity
-            style={styles.share_touchable_headerrightbutton}
+            style={styles.share_touchable_header_right_button}
             onPress={() => params.shareRecipe()}
           >
             <Image
@@ -58,146 +49,20 @@ class RecipeDetail extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      recipe: { recipe: undefined },
-      isLoading: false
-    };
-    // Ne pas oublier de binder la fonction _shareRecipe sinon, lorsqu'on va l'appeler depuis le headerRight de la navigation, this.state.recipe sera undefined et fera planter l'application
-    this._shareRecipe = this._shareRecipe.bind(this);
-    this._toggleFavorite = this._toggleFavorite.bind(this);
-  }
-
-  // Fonction pour faire passer la fonction _shareRecipe et le recipe aux paramètres de la navigation. Ainsi on aura accès à ces données au moment de définir le headerRight
-  _updateNavigationParams() {
-    this.props.navigation.setParams({
-      shareRecipe: this._shareRecipe,
-      recipe: { recipe: this.state.recipe.recipe }
-    });
-  }
-
-  // Dès que le recipe est chargé, on met à jour les paramètres de la navigation (avec la fonction _updateNavigationParams) pour afficher le bouton de partage
-  componentDidMount() {
-    const favoriteRecipeUri = this.props.favoritesRecipe.findIndex(
-      item => item.recipe.uri === this.props.navigation.state.params.uri
-    );
-    if (favoriteRecipeUri !== -1) {
-      // recipe déjà dans nos favoris, on a déjà son détail
-      // Pas besoin d'appeler l'API ici, on ajoute le détail stocké dans notre state global au state de notre component
-      this.setState(
-        {
-          recipe: this.props.favoritesRecipe[favoriteRecipeUri]
-        },
-        () => {
-          this._updateNavigationParams();
-        }
-      );
-      return;
-    }
-    // Le recipe n'est pas dans nos favoris, on n'a pas son détail
-    // On appelle l'API pour récupérer son détail
-    this.setState({ isLoading: true });
-    getRecipeDetailFromApi(this.props.navigation.state.params.uri).then(
-      data => {
-        this.setState(
-          {
-            recipe: { recipe: data[0] },
-            isLoading: false
-          },
-          () => {
-            this._updateNavigationParams();
-          }
-        );
-      }
-    );
-  }
-
-  _displayLoading() {
-    if (this.state.isLoading) {
-      return (
-        <View style={styles.loading_container}>
-          <ActivityIndicator size="large" />
-        </View>
-      );
-    }
-  }
-
-  _toggleFavorite() {
-    const action = { type: "TOGGLE_FAVORITE", value: this.state.recipe.recipe };
-    this.props.dispatch(action);
-  }
-
-  _displayFavoriteImage() {
-    var sourceImage = require("../Images/ic_favorite_border.png");
-    var shouldEnlarge = false;
-    if (
-      this.props.favoritesRecipe.findIndex(
-        item => item.uri === this.state.recipe.recipe.uri
-      ) !== -1
-    ) {
-      sourceImage = require("../Images/ic_favorite.png");
-      shouldEnlarge = true;
-    }
-    return (
-      <EnlargeShrink shouldEnlarge={shouldEnlarge}>
-        <Image style={styles.favorite_image} source={sourceImage} />
-      </EnlargeShrink>
-    );
-  }
-
-  _displayrecipe() {
-    const { recipe } = this.state.recipe;
-    if (recipe != undefined) {
-      return (
-        <ScrollView style={styles.scrollview_container}>
-          <Image style={styles.image} source={{ uri: recipe.image }} />
-          <Text style={styles.title_text}>{recipe.label}</Text>
-          <TouchableOpacity
-            style={styles.favorite_container}
-            onPress={() => this._toggleFavorite()}
-          >
-            {this._displayFavoriteImage()}
-          </TouchableOpacity>
-        </ScrollView>
-      );
-    }
-  }
-
-  _shareRecipe() {
-    const { recipe } = this.state;
-    Share.share({
-      title: recipe.label,
-      message: "message"
-    });
-  }
-
-  _displayFloatingActionButton() {
-    const { recipe } = this.state;
-    if (recipe != undefined && Platform.OS === "android") {
-      // uniquement sur android et lorsque le recipe est chargé
-      return (
-        <TouchableOpacity
-          style={styles.share_touchable_floatingactionbutton}
-          onPress={() => this._shareRecipe()}
-        >
-          <Image
-            style={styles.share_image}
-            source={require("../Images/ic_share.png")}
-          />
-        </TouchableOpacity>
-      );
-    }
-  }
-
-   */
-
-  constructor(props) {
-    super(props);
-    this.state = {
       recipe: undefined,
       isLoading: true,
       scrollOffset: new Animated.Value(0),
       ingredientsListOpacityValue: new Animated.Value(0),
       showIngredientsList: false
     };
+    this._shareRecipe = this._shareRecipe.bind(this);
+  }
+
+  _updateNavigationParams() {
+    this.props.navigation.setParams({
+      shareRecipe: this._shareRecipe,
+      recipe: this.state.recipe
+    });
   }
 
   _displayLoading() {
@@ -336,6 +201,27 @@ class RecipeDetail extends React.Component {
         color={colors.turquoiseGreen}
       />
     );
+  }
+
+  _shareRecipe() {
+    Share.share({ title: this.state.recipe.label, url: this.state.recipe.url });
+  }
+
+  _displayFloatingActionButton() {
+    if (this.state.recipe != undefined && Platform.OS === "android") {
+      // Uniquement sur Android et lorsque le film est chargé
+      return (
+        <TouchableOpacity
+          style={styles.share_touchable_floatingactionbutton}
+          onPress={() => this._shareRecipe()}
+        >
+          <Image
+            style={styles.share_image}
+            source={require("../Images/ic_share.png")}
+          />
+        </TouchableOpacity>
+      );
+    }
   }
 
   _displayRecipe() {
@@ -572,42 +458,14 @@ class RecipeDetail extends React.Component {
                       this.state.recipe.totalNutrients.FAT.unit
                     )}
                   </View>
-                  {/* {this.state.recipe.digest.map(item => {
-                    return (
-                      <View style={{ flex: 1 }} key={item.label}>
-                        {this._displayDailyNutritionalValuesPerServingChart(
-                          item.daily,
-                          this.state.recipe.yield,
-                          item.label,
-                          item.total,
-                          item.unit
-                        )}
-                      </View>
-                    );
-                  })} */}
                 </ScrollView>
               </View>
             </View>
 
             <View style={styles.ingredients_container}>
-              {/* <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center"
-                }}
-              > */}
               <Text style={styles.ingredients_section_title}>
                 Liste des ingrédients
               </Text>
-
-              {/* <TouchableOpacity
-                  style={styles.ingredients_list_btn}
-                  onPress={() => this._openIngredientsList()}
-                >
-                  <Text style={styles.ingredients_list_text_Btn}>Voir</Text>
-                </TouchableOpacity> */}
-              {/* </View> */}
               <Animated.View
                 style={{
                   opacity: this.state.ingredientsListOpacityValue,
@@ -636,13 +494,37 @@ class RecipeDetail extends React.Component {
   }
 
   componentDidMount() {
-    console.log("Component RecipeDetail monté");
+    console.log(
+      "Component RecipeDetail monté",
+      this.props.navigation.state.params
+    );
+    const favoriteRecipeIndex = this.props.favoritesRecipe.findIndex(
+      item => item.uri === this.props.navigation.state.params.uri
+    );
+    if (favoriteRecipeIndex !== -1) {
+      this.setState(
+        {
+          recipe: this.props.favoritesRecipe[favoriteRecipeIndex]
+        },
+        () => {
+          this._updateNavigationParams();
+        }
+      );
+      return;
+    }
+
+    this.setState({ isLoading: true });
     getRecipeDetailFromApi(this.props.navigation.getParam("uri")).then(data => {
       console.log("Component RecipeDetail monté et data :", data);
-      this.setState({
-        recipe: data[0], // return an array : [{...}] with the recipe object inside
-        isLoading: false
-      });
+      this.setState(
+        {
+          recipe: data[0], // return an array : [{...}] with the recipe object inside
+          isLoading: false
+        },
+        () => {
+          this._updateNavigationParams();
+        }
+      );
     });
   }
 
@@ -659,18 +541,9 @@ class RecipeDetail extends React.Component {
 
     return (
       <View style={styles.main_container}>
-        {/* <Text> */}
-        {/* Détail de la recette :
-          {this.props.navigation.getParam("uri") */}
-        {/* ou */}
-        {/* this.props.navigation.state.params.uri */}
-        {/* } */}
-        {/* </Text> */}
         {this._displayLoading()}
         {this._displayRecipe()}
-        {/*
-        {this._displayrecipe()}
-        {this._displayFloatingActionButton()} */}
+        {this._displayFloatingActionButton()}
       </View>
     );
   }
@@ -822,7 +695,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30
   },
-  share_touchable_headerrightbutton: {
+  share_touchable_header_right_button: {
     marginRight: 8
   }
 });
