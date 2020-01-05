@@ -32,6 +32,26 @@ const SearchStackNavigator = createStackNavigator({
     screen: RecipeDetail
   }
 });
+const FavoritesStackNavigator = createStackNavigator({
+  Favorites: {
+    screen: Favorites,
+    navigationOptions: {
+      title: "Rechercher une recette",
+      headerStyle: {
+        backgroundColor: colors.turquoiseGreen
+      },
+      headerTintColor: colors.white,
+      headerTitleStyle: {
+        fontSize: 20,
+        color: colors.white,
+        fontWeight: "bold"
+      }
+    }
+  },
+  RecipeDetail: {
+    screen: RecipeDetail
+  }
+});
 
 const RecipesTabNavigator = createBottomTabNavigator(
   {
@@ -44,7 +64,7 @@ const RecipesTabNavigator = createBottomTabNavigator(
       }
     },
     Favorites: {
-      screen: Favorites,
+      screen: FavoritesStackNavigator,
       navigationOptions: {
         tabBarIcon: ({ tintColor }) => (
           <AntDesign name="heart" size={25} color={tintColor} />
@@ -63,69 +83,5 @@ const RecipesTabNavigator = createBottomTabNavigator(
     }
   }
 );
-
-{
-  /*
-
-const FavoritesStackNavigator = createStackNavigator({
-  Favorites: {
-    screen: Favorites,
-    navigationOptions: {
-      title: "Favoris"
-    }
-  },
-  RecipeDetail: {
-    screen: RecipeDetail
-  }
-});
-
-const RecipesTabNavigator = createBottomTabNavigator(
-  {
-    Search: {
-      screen: SearchStackNavigator,
-      navigationOptions: {
-        tabBarIcon: () => {
-          return (
-            <Image
-              source={require("../Images/ic_search.png")}
-              style={styles.icon}
-            />
-          );
-        }
-      }
-    }
-    Favorites: {
-      screen: FavoritesStackNavigator,
-      navigationOptions: {
-        tabBarIcon: () => {
-          return (
-            <Image
-              source={require("../Images/ic_favorite.png")}
-              style={styles.icon}
-            />
-          );
-        }
-      }
-    }
-  },
-  {
-    tabBarOptions: {
-      activeBackgroundColor: "#DDDDDD",
-      inactiveBackgroundColor: "#FFFFFF",
-      showLabel: false,
-      showIcon: true
-    }
-  }
-);
-
-*/
-}
-
-const styles = StyleSheet.create({
-  icon: {
-    width: 30,
-    height: 30
-  }
-});
 
 export default createAppContainer(RecipesTabNavigator);
