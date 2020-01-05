@@ -322,8 +322,6 @@ class RecipeDetail extends React.Component {
     );
 
     if (this.state.recipe != undefined) {
-      console.log("test : ", this.state.recipe.totalNutrients);
-
       return (
         <Animated.ScrollView
           // Mis à jour de scrollOffset sur l'évènement onScroll
@@ -600,9 +598,9 @@ class RecipeDetail extends React.Component {
   }
 
   componentDidMount() {
-    console.log("Component FilmDetail monté");
+    console.log("Component RecipeDetail monté");
     getRecipeDetailFromApi(this.props.navigation.getParam("uri")).then(data => {
-      console.log(data);
+      console.log("Component RecipeDetail monté et data :", data);
       this.setState({
         recipe: data[0], // return an array : [{...}] with the recipe object inside
         isLoading: false
@@ -611,8 +609,15 @@ class RecipeDetail extends React.Component {
   }
 
   render() {
-    console.log("Component FilmDetail rendu");
-    console.log("Film détail : ", this.props.navigation);
+    console.log("Component RecipeDetail rendu");
+    console.log(
+      "Component RecipeDetail rendu Recipe détail props.navigation : ",
+      this.props.navigation
+    );
+    console.log(
+      "Component RecipeDetail rendu Recipe détail données du state global : ",
+      this.props
+    );
 
     return (
       <View style={styles.main_container}>
@@ -784,11 +789,10 @@ const styles = StyleSheet.create({
   }
 });
 
-// const mapStateToProps = state => {
-//   return {
-//     favoritesRecipe: state.favoritesRecipe
-//   };
-// };
+const mapStateToProps = state => {
+  return {
+    favoritesRecipe: state.favoritesRecipe
+  };
+};
 
-// export default connect(mapStateToProps)(RecipeDetail);
-export default RecipeDetail;
+export default connect(mapStateToProps)(RecipeDetail);

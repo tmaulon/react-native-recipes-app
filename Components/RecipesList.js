@@ -2,7 +2,7 @@
 
 import React from "react";
 import { StyleSheet, FlatList, Text, View } from "react-native";
-import RecipeItem from "./RecipeItem";
+import RecipeCard from "./RecipeCard";
 import { connect } from "react-redux";
 
 class RecipesList extends React.Component {
@@ -25,7 +25,7 @@ class RecipesList extends React.Component {
         extraData={this.props.favoritesRecipe}
         keyExtractor={(item, index) => `${item.uri}-${index}`}
         renderItem={({ item }) => (
-          <RecipeItem
+          <RecipeCard
             recipe={item.recipe}
             isRecipeFavorite={
               this.props.favoritesRecipe.findIndex(

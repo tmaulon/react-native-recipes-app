@@ -6,11 +6,15 @@ const toggleFavorite = (state = initialState, action) => {
   let nextState;
   switch (action.type) {
     case "TOGGLE_FAVORITE":
+      state.favoritesRecipe.map(item =>
+        console.log("compare item et action.value", item, action.value)
+      );
+
       const favoriteRecipeUri = state.favoritesRecipe.findIndex(
         item => item.uri === action.value.uri
       );
       if (favoriteRecipeUri !== -1) {
-        // Le film est déjà dans les favoris, on le supprime de la liste
+        // La recette est déjà dans les favoris, on la supprime de la liste
         nextState = {
           ...state,
           favoritesRecipe: state.favoritesRecipe.filter(
@@ -18,7 +22,7 @@ const toggleFavorite = (state = initialState, action) => {
           )
         };
       } else {
-        // Le film n'est pas dans les recipes favoris, on l'ajoute à la liste
+        // La recette n'est pas dans les recipes favoris, on l'ajoute à la liste
         nextState = {
           ...state,
           favoritesRecipe: [...state.favoritesRecipe, action.value]
