@@ -37,6 +37,7 @@ class Search extends React.Component {
       isLoading: false
     };
     this._loadRecipes = this._loadRecipes.bind(this);
+    this._loadMoreRecipes = this._loadMoreRecipes.bind(this);
   }
 
   _loadRecipes() {
@@ -79,7 +80,6 @@ class Search extends React.Component {
   _searchTextInputChanged(text) {
     this.searchedText = text;
   }
-
   _searchRecipes() {
     this.minPageNumber = 0;
     this.lastPageNumber = 0;
@@ -93,11 +93,6 @@ class Search extends React.Component {
       }
     );
   }
-
-  _displayDetailForRecipe = uri => {
-    console.log("display recipe with uri : ", uri);
-    this.props.navigation.navigate("RecipeDetail", { uri: uri });
-  };
 
   _displayLoading() {
     if (this.state.isLoading) {
@@ -118,10 +113,10 @@ class Search extends React.Component {
     return (
       <SafeAreaView style={styles.main_container}>
         <View style={styles.textinput_wrapper}>
-          {/* <SearchIcon fontSize={30} style={{ color: "#40B89F" }} /> */}
           <FontAwesomeIcon
             name="search"
-            fontSize={30}
+            fontSize={20}
+            size={20}
             color={colors.turquoiseGreen}
           />
           <TextInput
@@ -130,56 +125,17 @@ class Search extends React.Component {
             onChangeText={text => this._searchTextInputChanged(text)}
             onSubmitEditing={() => this._searchRecipes()}
           />
-          {/* <Button title="Rechercher" onPress={() => this._searchRecipes()} /> */}
         </View>
-        <FlatList
-          style={{
-            flex: 1,
-            height: "100%",
-            width: screenWidth,
-            paddingTop: hp("13%")
-          }}
-          data={this.state.recipes}
-          extraData={this.props.favoritesRecipe}
-          keyExtractor={(item, index) => `${item.uri}-${index}`}
-          renderItem={({ item }) => {
-            const { recipe } = item;
-            console.log(recipe);
 
-            return (
-              <RecipeCard
-                recipe={recipe}
-                isFavoriteRecipe={
-                  this.props.favoritesRecipe.findIndex(
-                    recipe => recipe.uri === item.recipe.uri
-                  ) !== -1
-                    ? true
-                    : false
-                }
-                // Bonus pour différencier les recipes déjà présent dans notre state global et qui n'ont donc pas besoin d'être récupérés depuis l'API
-                displayDetailForRecipe={this._displayDetailForRecipe}
-              />
-            );
-          }}
-          onEndReachedThreshold={0.5}
-          onEndReached={() => {
-            // if (
-            // !this.props.favoriteList &&
-            // this.props.lastPageNumber < this.props.totalPages
-            // ) {
-            this._loadMoreRecipes();
-            // }
-          }}
+        <RecipesList
+          recipes={this.state.recipes}
+          navigation={this.props.navigation}
+          loadMoreRecipes={this._loadMoreRecipes}
+          minPageNumber={this.minPageNumber}
+          lastPageNumber={this.lastPageNumber}
+          totalPages={this.totalPages}
+          favoriteList={false}
         />
-        {/* <RecipesList
-            recipes={this.state.recipes}
-            navigation={this.props.navigation}
-            loadrecipes={this._loadRecipes}
-            minPageNumber={this.minPageNumber}
-            lastPageNumber={this.lastPageNumber}
-            totalPages={this.totalPages}
-            favoriteList={false}
-          /> */}
         {this._displayLoading()}
       </SafeAreaView>
     );
@@ -216,8 +172,6 @@ const styles = StyleSheet.create({
     marginRight: 5,
     height: 50,
     width: "100%",
-    // borderColor: "#000000",
-    // borderWidth: 1,
     paddingLeft: 5
   },
   loading_container: {
@@ -232,12 +186,11 @@ const styles = StyleSheet.create({
 });
 
 // On connecte le store Redux, ainsi que les recettes favoris du state de notre application, à notre component Search
-const mapStateToProps = state => {
-  return {
-    favoritesRecipe: state.favoritesRecipe
-  };
-};
+// const mapStateToProps = state => {
+//   return {
+//     favoritesRecipe: state.favoritesRecipe
+//   };
+// };
 
-export default connect(mapStateToProps)(Search);
-
-// export default Search;
+// export default connect(mapStateToProps)(Search);
+export default Search;
