@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   FlatList
 } from "react-native";
+import { connect } from "react-redux";
 import RecipesList from "./RecipesList";
 import RecipeCard from "./RecipeCard";
 import { getRecipesFromApiWithSearchedText } from "../API/RecipeSearchAPi";
@@ -109,9 +110,13 @@ class Search extends React.Component {
   }
 
   render() {
+    console.log(
+      "Component Search rendu, données du state global : ",
+      this.props
+    );
+    console.log("Component Search rendu, data : ", this.state.recipes);
     return (
       <SafeAreaView style={styles.main_container}>
-        {/* <View style={styles.main_container}> */}
         <View style={styles.textinput_wrapper}>
           {/* <SearchIcon fontSize={30} style={{ color: "#40B89F" }} /> */}
           <FontAwesomeIcon
@@ -135,22 +140,27 @@ class Search extends React.Component {
             paddingTop: hp("13%")
           }}
           data={this.state.recipes}
-          // extraData={this.props.favoritesRecipe}
+          extraData={this.props.favoritesRecipe}
           keyExtractor={(item, index) => `${item.uri}-${index}`}
-          renderItem={({ item }) => (
-            <RecipeCard
-              recipe={item.recipe}
-              // isRecipeFavorite={
-              //   this.props.favoritesRecipe.findIndex(
-              //     recipe => recipe.uri === item.recipe.uri
-              //   ) !== -1
-              //     ? true
-              //     : false
-              // }
-              // Bonus pour différencier les recipes déjà présent dans notre state global et qui n'ont donc pas besoin d'être récupérés depuis l'API
-              displayDetailForRecipe={this._displayDetailForRecipe}
-            />
-          )}
+          renderItem={({ item }) => {
+            const { recipe } = item;
+            console.log(recipe);
+
+            return (
+              <RecipeCard
+                recipe={recipe}
+                isFavoriteRecipe={
+                  this.props.favoritesRecipe.findIndex(
+                    recipe => recipe.uri === item.recipe.uri
+                  ) !== -1
+                    ? true
+                    : false
+                }
+                // Bonus pour différencier les recipes déjà présent dans notre state global et qui n'ont donc pas besoin d'être récupérés depuis l'API
+                displayDetailForRecipe={this._displayDetailForRecipe}
+              />
+            );
+          }}
           onEndReachedThreshold={0.5}
           onEndReached={() => {
             // if (
@@ -171,7 +181,6 @@ class Search extends React.Component {
             favoriteList={false}
           /> */}
         {this._displayLoading()}
-        {/* </View> */}
       </SafeAreaView>
     );
   }
@@ -222,4 +231,13 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Search;
+// On connecte le store Redux, ainsi que les recettes favoris du state de notre application, à notre component Search
+const mapStateToProps = state => {
+  return {
+    favoritesRecipe: state.favoritesRecipe
+  };
+};
+
+export default connect(mapStateToProps)(Search);
+
+// export default Search;
