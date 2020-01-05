@@ -1,7 +1,7 @@
 // Components/RecipesList.js
 
 import React from "react";
-import { StyleSheet, FlatList, Text, View } from "react-native";
+import { FlatList } from "react-native";
 import RecipeCard from "./RecipeCard";
 import { connect } from "react-redux";
 import {
@@ -32,21 +32,25 @@ class RecipesList extends React.Component {
           flex: 1,
           height: "100%",
           width: screenWidth,
-          paddingTop: hp("13%")
+          paddingTop: !this.props.favoriteList ? hp("13%") : 20
         }}
         data={this.props.recipes}
         extraData={this.props.favoritesRecipe}
         keyExtractor={(item, index) => `${item.uri}-${index}`}
         renderItem={({ item }) => {
-          const { recipe } = item;
-          console.log(recipe);
           return (
             <RecipeCard
-              recipe={recipe}
+              recipe={this.props.favoriteList === true ? item : item.recipe}
               isFavoriteRecipe={
-                this.props.favoritesRecipe.findIndex(
-                  recipe => recipe.uri === item.recipe.uri
-                ) !== -1
+                this.props.favoriteList !== true
+                  ? this.props.favoritesRecipe.findIndex(
+                      recipe => recipe.uri === item.recipe.uri
+                    ) !== -1
+                    ? true
+                    : false
+                  : this.props.favoritesRecipe.findIndex(
+                      recipe => recipe.uri === item.uri
+                    ) !== -1
                   ? true
                   : false
               }
@@ -56,12 +60,9 @@ class RecipesList extends React.Component {
         }}
         onEndReachedThreshold={0.5}
         onEndReached={() => {
-          // if (
-          // !this.props.favoriteList &&
-          // this.props.lastPageNumber < this.props.totalPages
-          // ) {
-          this.props.loadMoreRecipes();
-          // }
+          if (!this.props.favoriteList) {
+            this.props.loadMoreRecipes();
+          }
         }}
       />
     );
