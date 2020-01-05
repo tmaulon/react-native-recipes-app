@@ -7,15 +7,29 @@ import {
   Text,
   ActivityIndicator,
   ScrollView,
+  SectionList,
   Image,
   TouchableOpacity,
   Share,
   Platform,
-  Animated
+  Animated,
+  Button
 } from "react-native";
 import { getRecipeDetailFromApi } from "../API/RecipeSearchAPi";
 import { connect } from "react-redux";
 import EnlargeShrink from "../Animations/EnlargeShrink";
+import AntDesignIcon from "react-native-vector-icons/AntDesign";
+import MaterialCommunityIcon from "react-native-vector-icons/MaterialCommunityIcons";
+import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
+import { colors } from "../Helpers/Colors";
+import { ProgressChart } from "react-native-chart-kit";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp
+} from "react-native-responsive-screen";
+import { Dimensions } from "react-native";
+const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
 
 class RecipeDetail extends React.Component {
   /*
@@ -179,7 +193,9 @@ class RecipeDetail extends React.Component {
     this.state = {
       recipe: undefined,
       isLoading: true,
-      scrollOffset: new Animated.Value(0)
+      scrollOffset: new Animated.Value(0),
+      ingredientsListOpacityValue: new Animated.Value(0),
+      showIngredientsList: false
     };
   }
 
@@ -193,11 +209,111 @@ class RecipeDetail extends React.Component {
     }
   }
 
+  _calcTimeServing = time => {
+    const hour = parseInt(time / 60);
+    const minutes = time % 60;
+    return (
+      <Text style={styles.indicators_text}>
+        {hour !== 0 ? `${hour}h ` : ""}
+        {minutes !== 0 ? `${minutes}mn` : ""}
+      </Text>
+    );
+  };
+
+  _calcNutritionalValuesPerServing = (quantity, portion) =>
+    parseInt(quantity / portion);
+  _calcDailyNutritionalValuesPerServing = (quantity, portion) =>
+    parseInt(quantity / portion) > 100 ? 100 : parseInt(quantity / portion);
+  _displayNutritionalValuesPerServing = (label, quantity, unit, portion) => {
+    return (
+      <View style={{ alignItems: "center" }}>
+        <Text style={styles.nutritional_value_label}>{label}</Text>
+        <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+          <Text style={styles.nutritional_value_result}>
+            {this._calcNutritionalValuesPerServing(quantity, portion)}
+          </Text>
+          <Text style={styles.nutritional_value_unit}>{unit}</Text>
+        </View>
+      </View>
+    );
+  };
+  _displayDailyNutritionalValuesPerServingChart = (
+    quantity,
+    portion,
+    nutritionalValuesPerServingLabel,
+    nutritionalValuesPerServingQuantity,
+    nutritionalValuesPerServingUnit
+  ) => {
+    const chartConfig = {
+      backgroundGradientFrom: "#fff",
+      backgroundGradientTo: "#fff",
+      color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+      strokeWidth: 1 // optional, default 3
+    };
+    return (
+      <View
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative"
+        }}
+      >
+        <ProgressChart
+          data={[
+            this._calcDailyNutritionalValuesPerServing(quantity, portion) / 100
+          ]}
+          width={220}
+          height={220}
+          chartConfig={chartConfig}
+        />
+        <View
+          style={{ position: "absolute", left: 0, right: 0, marginLeft: -40 }}
+        >
+          {this._displayNutritionalValuesPerServing(
+            nutritionalValuesPerServingLabel,
+            nutritionalValuesPerServingQuantity,
+            nutritionalValuesPerServingUnit,
+            portion
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  _displayRecipeLabels = labels =>
+    labels.map((label, index) => {
+      return (
+        <View key={index} style={styles.label_tag}>
+          <Text style={styles.label_tag_text}>{label}</Text>
+        </View>
+      );
+    });
+
+  _displayIngredients = ingredients =>
+    ingredients.map((ingredient, index) => {
+      return (
+        <View key={index}>
+          <Text style={styles.ingredients_header}>{ingredient.text}</Text>
+          <Text style={styles.ingredients_item}>
+            {parseInt(ingredient.weight)}g
+          </Text>
+        </View>
+      );
+    });
+
+  _openIngredientsList = () => {
+    Animated.timing(this.state.ingredientsListOpacityValue, {
+      toValue: 1,
+      duration: 1000
+    }).start();
+    this.setState({ showIngredientsList: !this.state.showIngredientsList });
+  };
+
   _displayRecipe() {
     const { scrollOffset } = this.state;
     const expandedHeaderHeight = 400;
-    const collapsedHeaderHeight = 64;
-    const titleHeight = 44;
+    const collapsedHeaderHeight = 100;
+    const titleHeight = 50;
     const scrollSpan = expandedHeaderHeight - collapsedHeaderHeight;
     // Utilisation d'Animated.event pour mettre à jour scrollOffset lors de l'évènement onScroll
     const scrollEvent = Animated.event(
@@ -206,8 +322,8 @@ class RecipeDetail extends React.Component {
     );
 
     if (this.state.recipe != undefined) {
-      const hour = parseInt(this.state.recipe.totalTime / 60);
-      const minutes = this.state.recipe.totalTime % 60;
+      console.log("test : ", this.state.recipe.totalNutrients);
+
       return (
         <Animated.ScrollView
           // Mis à jour de scrollOffset sur l'évènement onScroll
@@ -270,16 +386,19 @@ class RecipeDetail extends React.Component {
             <Animated.View
               style={{
                 position: "absolute",
-                left: 30,
-                bottom: 100,
+                left: 0,
+                bottom: 0,
                 flex: 1,
-                width: "80%",
+                width: screenWidth,
+                paddingHorizontal: 30,
+                paddingVertical: 20,
                 // Déplacement du titre vers le haut afin de le faire apparaitre progressivement
                 transform: [
                   {
                     translateY: scrollOffset.interpolate({
                       inputRange: [scrollSpan, scrollSpan + titleHeight],
-                      outputRange: [titleHeight, 0],
+                      outputRange: [0, 0],
+                      // outputRange: [titleHeight, 0],
                       extrapolate: "clamp"
                     })
                   }
@@ -299,44 +418,180 @@ class RecipeDetail extends React.Component {
           </Animated.View>
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-              paddingTop: 50,
-              paddingHorizontal: 30
+              width: screenWidth,
+              paddingTop: 20,
+              flex: 1
             }}
           >
-            <View style={{ alignItems: "center" }}>
-              <Text
-                style={{
-                  fontWeight: "bold",
-                  fontSize: 16,
-                  marginBottom: 10,
-                  color: "#40B89F"
-                  // color: "#58FFC0"
-                }}
-              >
-                Temps de préparation
-              </Text>
-              <Text>
-                {hour !== 0 ? `${hour}h ` : ""}
-                {minutes !== 0 ? `${minutes}mn` : ""}
-              </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-around",
+                width: screenWidth,
+                paddingHorizontal: 30,
+                flex: 1
+              }}
+            >
+              <View style={{ alignItems: "center" }}>
+                <Text style={styles.subtitle_text}>Préparation</Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <AntDesignIcon
+                    name="clockcircleo"
+                    size={12}
+                    color={colors.turquoiseGreen}
+                    style={{ marginRight: 5 }}
+                  />
+                  {this._calcTimeServing(this.state.recipe.totalTime)}
+                </View>
+              </View>
+              <View style={{ alignItems: "center" }}>
+                <Text style={styles.subtitle_text}>Calories</Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <MaterialCommunityIcon
+                    name="fire"
+                    size={16}
+                    color={colors.turquoiseGreen}
+                    style={{ marginRight: 5 }}
+                  />
+                  <Text style={styles.indicators_text}>
+                    {this._calcNutritionalValuesPerServing(
+                      this.state.recipe.calories,
+                      this.state.recipe.yield
+                    )}
+                  </Text>
+                </View>
+              </View>
+              <View style={{ alignItems: "center" }}>
+                <Text style={styles.subtitle_text}>Portions</Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <FontAwesome5Icon
+                    name="utensils"
+                    size={16}
+                    color={colors.turquoiseGreen}
+                    style={{ marginRight: 5 }}
+                  />
+                  <Text style={styles.indicators_text}>
+                    {this.state.recipe.yield}
+                  </Text>
+                </View>
+              </View>
             </View>
-            <View style={{ alignItems: "center" }}>
-              <Text
+            <View style={styles.ingredients_container}>
+              <Text style={styles.ingredients_section_title}>
+                Régimes alimentaires
+              </Text>
+              {/* tags list with dietLabels */}
+              <View
                 style={{
-                  fontWeight: "bold",
-                  fontSize: 16,
-                  marginBottom: 10,
-                  color: "#40B89F"
-                  // color: "#58FFC0"
+                  flex: 1,
+                  width: screenWidth,
+                  flexDirection: "row",
+                  flexWrap: "wrap"
                 }}
               >
-                Nombre de parts
+                {this._displayRecipeLabels([
+                  ...this.state.recipe.dietLabels,
+                  ...this.state.recipe.healthLabels
+                ])}
+              </View>
+            </View>
+            <View style={{ alignItems: "center", width: screenWidth, flex: 1 }}>
+              <Text
+                style={[
+                  styles.subtitle_text,
+                  {
+                    paddingHorizontal: 30
+                  }
+                ]}
+              >
+                Valeurs nutritionnelles par portion
               </Text>
-              <Text>{this.state.recipe.yield}</Text>
+              <View style={{ flex: 1 }}>
+                <ScrollView style={{ flex: 1 }} horizontal>
+                  <View style={{ flex: 1 }}>
+                    {this._displayDailyNutritionalValuesPerServingChart(
+                      this.state.recipe.totalDaily.CHOCDF.quantity,
+                      this.state.recipe.yield,
+                      this.state.recipe.totalNutrients.CHOCDF.label,
+                      this.state.recipe.totalNutrients.CHOCDF.quantity,
+                      this.state.recipe.totalNutrients.CHOCDF.unit
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    {this._displayDailyNutritionalValuesPerServingChart(
+                      this.state.recipe.totalDaily.PROCNT.quantity,
+                      this.state.recipe.yield,
+                      this.state.recipe.totalNutrients.PROCNT.label,
+                      this.state.recipe.totalNutrients.PROCNT.quantity,
+                      this.state.recipe.totalNutrients.PROCNT.unit
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    {this._displayDailyNutritionalValuesPerServingChart(
+                      this.state.recipe.totalDaily.FAT.quantity,
+                      this.state.recipe.yield,
+                      this.state.recipe.totalNutrients.FAT.label,
+                      this.state.recipe.totalNutrients.FAT.quantity,
+                      this.state.recipe.totalNutrients.FAT.unit
+                    )}
+                  </View>
+                  {/* {this.state.recipe.digest.map(item => {
+                    return (
+                      <View style={{ flex: 1 }} key={item.label}>
+                        {this._displayDailyNutritionalValuesPerServingChart(
+                          item.daily,
+                          this.state.recipe.yield,
+                          item.label,
+                          item.total,
+                          item.unit
+                        )}
+                      </View>
+                    );
+                  })} */}
+                </ScrollView>
+              </View>
+            </View>
+
+            <View style={styles.ingredients_container}>
+              {/* <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}
+              > */}
+              <Text style={styles.ingredients_section_title}>
+                Liste des ingrédients
+              </Text>
+
+              {/* <TouchableOpacity
+                  style={styles.ingredients_list_btn}
+                  onPress={() => this._openIngredientsList()}
+                >
+                  <Text style={styles.ingredients_list_text_Btn}>Voir</Text>
+                </TouchableOpacity> */}
+              {/* </View> */}
+              <Animated.View
+                style={{
+                  opacity: this.state.ingredientsListOpacityValue,
+                  flex: 1,
+                  overflow: "hidden"
+                }}
+              >
+                {this.state.showIngredientsList &&
+                  this._displayIngredients(this.state.recipe.ingredients)}
+              </Animated.View>
+              <TouchableOpacity
+                style={styles.ingredients_list_btn}
+                onPress={() => this._openIngredientsList()}
+              >
+                <Text style={styles.ingredients_list_text_Btn}>
+                  {!this.state.showIngredientsList
+                    ? "Voir la liste des ingrédients"
+                    : "Cacher la liste des ingrédients"}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Animated.ScrollView>
@@ -414,8 +669,84 @@ const styles = StyleSheet.create({
     color: "#000000",
     textAlign: "center"
   },
+  subtitle_text: {
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 16,
+    paddingTop: 20,
+    marginBottom: 10,
+    color: colors.turquoiseGreen
+  },
+  indicators_text: {
+    color: colors.turquoiseGreen
+  },
+  nutritional_value_label: {
+    color: colors.grey,
+    fontSize: 12
+  },
+  nutritional_value_result: {
+    color: colors.turquoiseGreen,
+    fontSize: 16
+  },
+  nutritional_value_unit: {
+    color: colors.turquoiseGreen,
+    fontSize: 16
+  },
+  ingredients_container: {
+    flex: 1,
+    paddingHorizontal: 20
+  },
+  ingredients_section_title: {
+    paddingTop: 20,
+    paddingBottom: 10,
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.turquoiseGreen
+  },
+  ingredients_header: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    fontSize: 12,
+    fontWeight: "bold",
+    backgroundColor: colors.lightGreen,
+    color: colors.turquoiseGreen
+  },
+  ingredients_item: {
+    fontSize: 14,
+    paddingHorizontal: 20,
+    paddingTop: 5,
+    paddingBottom: 10,
+    color: colors.turquoiseGreen
+  },
+  label_tag: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    marginRight: 20,
+    marginBottom: 10,
+    backgroundColor: colors.turquoiseGreen,
+    borderRadius: 5
+  },
+  label_tag_text: {
+    fontSize: 14,
+    color: colors.white,
+    fontWeight: "bold"
+  },
   favorite_container: {
     alignItems: "center"
+  },
+  ingredients_list_btn: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    marginRight: 20,
+    marginBottom: 10,
+    backgroundColor: colors.turquoiseGreen,
+    borderRadius: 5
+  },
+  ingredients_list_text_Btn: {
+    textAlign: "center",
+    fontSize: 14,
+    color: colors.white,
+    fontWeight: "bold"
   },
   description_text: {
     fontStyle: "italic",

@@ -1,20 +1,24 @@
-// Components/RecipeItem.js
+// Components/RecipeCard.js
 
 import React from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
 import FadeIn from "../Animations/FadeIn";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp
+} from "react-native-responsive-screen";
 
-class RecipeItem extends React.Component {
-  _displayFavoriteImage() {
-    if (this.props.isRecipeFavorite) {
-      return (
-        <Image
-          style={styles.favorite_image}
-          source={require("../Images/ic_favorite.png")}
-        />
-      );
-    }
-  }
+class RecipeCard extends React.Component {
+  // _displayFavoriteImage() {
+  //   if (this.props.isRecipeFavorite) {
+  //     return (
+  //       <Image
+  //         style={styles.favorite_image}
+  //         source={require("../Images/ic_favorite.png")}
+  //       />
+  //     );
+  //   }
+  // }
 
   render() {
     const { recipe, displayDetailForRecipe } = this.props;
@@ -28,7 +32,7 @@ class RecipeItem extends React.Component {
           <Image style={styles.image} source={{ uri: recipe.image }} />
           <View style={styles.content_container}>
             <View style={styles.header_container}>
-              {this._displayFavoriteImage()}
+              {/* {this._displayFavoriteImage()} */}
               <Text style={styles.title_text}>{recipe.label}</Text>
             </View>
           </View>
@@ -40,28 +44,42 @@ class RecipeItem extends React.Component {
 
 const styles = StyleSheet.create({
   main_container: {
-    height: 190,
-    flexDirection: "row"
+    alignSelf: "center",
+    position: "relative",
+    flex: 1,
+    height: 200,
+    flexDirection: "row",
+    marginVertical: 15,
+    elevation: 1, // only for android
+    shadowOffset: { width: 1, height: 1 }, //only for ios
+    shadowColor: "#000", //only for ios
+    width: wp("90%"),
+    shadowOpacity: 0.7,
+    backgroundColor: "#fff",
+    borderRadius: 50,
+    overflow: "hidden"
   },
   image: {
-    width: 120,
-    height: 180,
-    margin: 5
+    width: "100%",
+    height: "100%"
   },
   content_container: {
     flex: 1,
-    margin: 5
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    paddingVertical: 20,
+    paddingHorizontal: 30,
+    width: "100%",
+    backgroundColor: "rgba(64, 184, 159, 0.5)"
   },
   header_container: {
-    flex: 3,
-    flexDirection: "row"
+    flex: 1
   },
   title_text: {
+    color: "#fff",
     fontWeight: "bold",
-    fontSize: 20,
-    flex: 1,
-    flexWrap: "wrap",
-    paddingRight: 5
+    fontSize: 24
   },
   vote_text: {
     fontWeight: "bold",
@@ -89,4 +107,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default RecipeItem;
+export default RecipeCard;

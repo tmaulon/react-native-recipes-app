@@ -11,15 +11,17 @@ import {
   FlatList
 } from "react-native";
 import RecipesList from "./RecipesList";
-import RecipeItem from "./RecipeItem";
+import RecipeCard from "./RecipeCard";
 import { getRecipesFromApiWithSearchedText } from "../API/RecipeSearchAPi";
 import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp
 } from "react-native-responsive-screen";
+import { Dimensions } from "react-native";
+const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
-
 import { colors } from "../Helpers/Colors";
 
 class Search extends React.Component {
@@ -56,12 +58,6 @@ class Search extends React.Component {
     }
   }
   _loadMoreRecipes() {
-    console.log(
-      "end reachend, lastpagenumber, recipes : ",
-      this.lastPageNumber,
-      this.state.recipes
-    );
-
     if (this.searchedText.length > 0) {
       this.setState({ isLoading: true });
       this.minPageNumber = this.lastPageNumber;
@@ -71,20 +67,11 @@ class Search extends React.Component {
         this.minPageNumber,
         this.lastPageNumber
       ).then(data => {
-        // this.minPageNumber = data.from;
-        // this.lastPageNumber = data.to;
-        // this.totalPages = data.count;
         this.setState({
           recipes: [...this.state.recipes, ...data.hits],
           isLoading: false
         });
       });
-      console.log(
-        "new minPageNumber, new lastpagenumber, new recipes : ",
-        this.minPageNumber,
-        this.lastPageNumber,
-        this.state.recipes
-      );
     }
   }
 
@@ -141,12 +128,17 @@ class Search extends React.Component {
           {/* <Button title="Rechercher" onPress={() => this._searchRecipes()} /> */}
         </View>
         <FlatList
-          style={{ flex: 1, width: "100%", paddingTop: hp("13%") }}
+          style={{
+            flex: 1,
+            height: "100%",
+            width: screenWidth,
+            paddingTop: hp("13%")
+          }}
           data={this.state.recipes}
           // extraData={this.props.favoritesRecipe}
           keyExtractor={(item, index) => `${item.uri}-${index}`}
           renderItem={({ item }) => (
-            <RecipeItem
+            <RecipeCard
               recipe={item.recipe}
               // isRecipeFavorite={
               //   this.props.favoritesRecipe.findIndex(
