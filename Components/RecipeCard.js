@@ -7,21 +7,35 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp
 } from "react-native-responsive-screen";
+import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
+import MaterialCommunityIcon from "react-native-vector-icons/MaterialCommunityIcons";
+import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
+import { colors } from "../Helpers/Colors";
 
 class RecipeCard extends React.Component {
-  // _displayFavoriteImage() {
-  //   if (this.props.isRecipeFavorite) {
-  //     return (
-  //       <Image
-  //         style={styles.favorite_image}
-  //         source={require("../Images/ic_favorite.png")}
-  //       />
-  //     );
-  //   }
-  // }
+  _displayFavoriteImage() {
+    console.log("in _display favorite image : ", this.props.favoritesRecipe);
+
+    return this.props.isFavoriteRecipe ? (
+      <FontAwesomeIcon
+        name="heart"
+        fontSize={35}
+        size={35}
+        color={colors.white}
+      />
+    ) : (
+      <FontAwesomeIcon
+        name="heart-o"
+        fontSize={35}
+        size={35}
+        color={colors.white}
+      />
+    );
+  }
 
   render() {
     const { recipe, displayDetailForRecipe } = this.props;
+    console.log("in recipe card : ", this.props);
 
     return (
       <FadeIn>
@@ -32,8 +46,46 @@ class RecipeCard extends React.Component {
           <Image style={styles.image} source={{ uri: recipe.image }} />
           <View style={styles.content_container}>
             <View style={styles.header_container}>
-              {/* {this._displayFavoriteImage()} */}
-              <Text style={styles.title_text}>{recipe.label}</Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}
+              >
+                <Text style={styles.title_text}>{recipe.label}</Text>
+                <View style={styles.heart_wrapper}>
+                  {this._displayFavoriteImage()}
+                </View>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginRight: 10
+                  }}
+                >
+                  <MaterialCommunityIcon
+                    name="fire"
+                    size={16}
+                    color={colors.white}
+                    style={{ marginRight: 5 }}
+                  />
+                  <Text style={{ color: colors.white }}>
+                    {parseInt(recipe.calories)}
+                  </Text>
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <FontAwesome5Icon
+                    name="utensils"
+                    size={16}
+                    color={colors.white}
+                    style={{ marginRight: 5 }}
+                  />
+                  <Text style={{ color: colors.white }}>{recipe.yield}</Text>
+                </View>
+              </View>
             </View>
           </View>
         </TouchableOpacity>
@@ -71,15 +123,22 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 30,
     width: "100%",
-    backgroundColor: "rgba(64, 184, 159, 0.5)"
+    backgroundColor: "rgba(0, 0, 0, 0.5)"
   },
   header_container: {
     flex: 1
+    // flexDirection: "row",
+    // justifyContent: "space-between",
+    // alignItems: "center"
   },
   title_text: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 24
+    fontSize: 24,
+    flex: 3
+  },
+  heart_wrapper: {
+    flex: 1
   },
   vote_text: {
     fontWeight: "bold",
