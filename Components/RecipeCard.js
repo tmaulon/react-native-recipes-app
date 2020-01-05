@@ -127,9 +127,6 @@ const styles = StyleSheet.create({
   },
   header_container: {
     flex: 1
-    // flexDirection: "row",
-    // justifyContent: "space-between",
-    // alignItems: "center"
   },
   title_text: {
     color: "#fff",
