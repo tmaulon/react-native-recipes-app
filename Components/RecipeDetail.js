@@ -21,6 +21,7 @@ import EnlargeShrink from "../Animations/EnlargeShrink";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import MaterialCommunityIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
+import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
 import { colors } from "../Helpers/Colors";
 import { ProgressChart } from "react-native-chart-kit";
 import {
@@ -219,7 +220,6 @@ class RecipeDetail extends React.Component {
       </Text>
     );
   };
-
   _calcNutritionalValuesPerServing = (quantity, portion) =>
     parseInt(quantity / portion);
   _calcDailyNutritionalValuesPerServing = (quantity, portion) =>
@@ -279,7 +279,6 @@ class RecipeDetail extends React.Component {
       </View>
     );
   };
-
   _displayRecipeLabels = labels =>
     labels.map((label, index) => {
       return (
@@ -288,7 +287,6 @@ class RecipeDetail extends React.Component {
         </View>
       );
     });
-
   _displayIngredients = ingredients =>
     ingredients.map((ingredient, index) => {
       return (
@@ -300,7 +298,6 @@ class RecipeDetail extends React.Component {
         </View>
       );
     });
-
   _openIngredientsList = () => {
     Animated.timing(this.state.ingredientsListOpacityValue, {
       toValue: 1,
@@ -308,6 +305,38 @@ class RecipeDetail extends React.Component {
     }).start();
     this.setState({ showIngredientsList: !this.state.showIngredientsList });
   };
+
+  _toggleFavorite() {
+    // type de l'action à passer : "TOGGLE_FAVORITE" et la valeur de l'action est la recette affichée
+    const action = { type: "TOGGLE_FAVORITE", value: this.state.recipe };
+    this.props.dispatch(action);
+  }
+
+  _displayFavoriteImage() {
+    console.log(
+      "in _display favorite image : ",
+      this.props.favoritesRecipe,
+      this.state.recipe
+    );
+
+    return this.props.favoritesRecipe.findIndex(
+      item => item.uri === this.state.recipe.uri
+    ) !== -1 ? (
+      <FontAwesomeIcon
+        name="heart"
+        fontSize={35}
+        size={35}
+        color={colors.turquoiseGreen}
+      />
+    ) : (
+      <FontAwesomeIcon
+        name="heart-o"
+        fontSize={35}
+        size={35}
+        color={colors.turquoiseGreen}
+      />
+    );
+  }
 
   _displayRecipe() {
     const { scrollOffset } = this.state;
@@ -390,6 +419,9 @@ class RecipeDetail extends React.Component {
                 width: screenWidth,
                 paddingHorizontal: 30,
                 paddingVertical: 20,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
                 // Déplacement du titre vers le haut afin de le faire apparaitre progressivement
                 transform: [
                   {
@@ -412,6 +444,12 @@ class RecipeDetail extends React.Component {
               >
                 {this.state.recipe.label}
               </Animated.Text>
+              <TouchableOpacity
+                style={styles.favorite_container}
+                onPress={() => this._toggleFavorite()}
+              >
+                {this._displayFavoriteImage()}
+              </TouchableOpacity>
             </Animated.View>
           </Animated.View>
           <View
