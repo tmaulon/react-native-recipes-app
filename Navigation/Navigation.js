@@ -5,6 +5,7 @@ import { StyleSheet, Image } from "react-native";
 import { createAppContainer } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
+import Index from "../Components/Index";
 import Search from "../Components/Search";
 import RecipeDetail from "../Components/RecipeDetail";
 import Favorites from "../Components/Favorites";
@@ -12,6 +13,23 @@ import { colors } from "../Helpers/Colors";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
+const IndexStackNavigator = createStackNavigator({
+  Index: {
+    screen: Index,
+    navigationOptions: {
+      title: "Authentification",
+      headerStyle: {
+        backgroundColor: colors.turquoiseGreen
+      },
+      headerTintColor: colors.white,
+      headerTitleStyle: {
+        fontSize: 20,
+        color: colors.white,
+        fontWeight: "bold"
+      }
+    }
+  }
+});
 const SearchStackNavigator = createStackNavigator({
   Search: {
     screen: Search,
@@ -29,7 +47,19 @@ const SearchStackNavigator = createStackNavigator({
     }
   },
   RecipeDetail: {
-    screen: RecipeDetail
+    screen: RecipeDetail,
+    navigationOptions: {
+      title: "Détail de recette",
+      headerStyle: {
+        backgroundColor: colors.turquoiseGreen
+      },
+      headerTintColor: colors.white,
+      headerTitleStyle: {
+        fontSize: 20,
+        color: colors.white,
+        fontWeight: "bold"
+      }
+    }
   }
 });
 const FavoritesStackNavigator = createStackNavigator({
@@ -49,12 +79,33 @@ const FavoritesStackNavigator = createStackNavigator({
     }
   },
   RecipeDetail: {
-    screen: RecipeDetail
+    screen: RecipeDetail,
+    navigationOptions: {
+      title: "Détail de recette",
+      headerStyle: {
+        backgroundColor: colors.turquoiseGreen,
+        alignItems: "center"
+      },
+      headerTintColor: colors.white,
+      headerTitleStyle: {
+        fontSize: 20,
+        color: colors.white,
+        fontWeight: "bold"
+      }
+    }
   }
 });
 
 const RecipesTabNavigator = createBottomTabNavigator(
   {
+    Index: {
+      screen: IndexStackNavigator,
+      navigationOptions: {
+        tabBarIcon: ({ tintColor }) => (
+          <AntDesign name="search1" size={25} color={tintColor} />
+        )
+      }
+    },
     Search: {
       screen: SearchStackNavigator,
       navigationOptions: {
@@ -83,5 +134,4 @@ const RecipesTabNavigator = createBottomTabNavigator(
     }
   }
 );
-
 export default createAppContainer(RecipesTabNavigator);
