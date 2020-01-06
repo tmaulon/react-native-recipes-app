@@ -4,7 +4,9 @@ import React from "react";
 import {
   StyleSheet,
   View,
+  Text,
   TextInput,
+  Slider,
   Button,
   ActivityIndicator,
   SafeAreaView,
@@ -24,6 +26,7 @@ const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { colors } from "../Helpers/Colors";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 class Search extends React.Component {
   constructor(props) {
@@ -33,8 +36,10 @@ class Search extends React.Component {
     this.lastPageNumber = 0;
     this.totalPages = 0;
     this.state = {
+      sliderValue: 0,
       recipes: [],
-      isLoading: false
+      isLoading: false,
+      filterIsActive: false
     };
     this._loadRecipes = this._loadRecipes.bind(this);
     this._loadMoreRecipes = this._loadMoreRecipes.bind(this);
@@ -80,6 +85,10 @@ class Search extends React.Component {
   _searchTextInputChanged(text) {
     this.searchedText = text;
   }
+  _searchSliderInputChanged(val) {
+    this.setState({ val });
+    console.log(this.state.sliderValue);
+  }
   _searchRecipes() {
     this.minPageNumber = 0;
     this.lastPageNumber = 0;
@@ -112,19 +121,72 @@ class Search extends React.Component {
     console.log("Component Search rendu, data : ", this.state.recipes);
     return (
       <SafeAreaView style={styles.main_container}>
-        <View style={styles.textinput_wrapper}>
-          <FontAwesomeIcon
-            name="search"
-            fontSize={20}
-            size={20}
-            color={colors.turquoiseGreen}
-          />
-          <TextInput
-            style={styles.textinput}
-            placeholder="Nom d'un ingrédient"
-            onChangeText={text => this._searchTextInputChanged(text)}
-            onSubmitEditing={() => this._searchRecipes()}
-          />
+        <View style={styles.text_input_wrapper}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <FontAwesomeIcon
+              name="search"
+              fontSize={20}
+              size={20}
+              color={colors.turquoiseGreen}
+            />
+            <TextInput
+              style={styles.text_input}
+              placeholder="Nom d'un ingrédient"
+              onChangeText={text => this._searchTextInputChanged(text)}
+              onSubmitEditing={() => this._searchRecipes()}
+            />
+          </View>
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.turquoiseGreen,
+              padding: 10,
+              flexDirection: "row",
+              width: "100%"
+            }}
+            onPress={() =>
+              this.setState({ filterIsActive: !this.state.filterIsActive })
+            }
+          >
+            <Text style={{ color: colors.white, marginRight: 20 }}>
+              {this.state.filterIsActive
+                ? "Cacher le filtre"
+                : "Filtrer la recherche"}
+            </Text>
+            <FontAwesomeIcon
+              name="filter"
+              fontSize={20}
+              size={20}
+              color={colors.white}
+            />
+          </TouchableOpacity>
+
+          {this.state.filterIsActive && (
+            <View style={styles.slider_input_wrapper}>
+              <Text style={styles.slider_input_text}>
+                Filtrer avec un nombre de calories maximum
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={[styles.sliderLabels, styles.leftSliderLabel]}>
+                  0
+                </Text>
+                <Slider
+                  style={{ width: 200, height: 40 }}
+                  minimumValue={0}
+                  maximumValue={5000}
+                  step={1}
+                  value={this.state.sliderValue}
+                  onValueChange={sliderValue => this.setState({ sliderValue })}
+                  thumbTintColor="rgb(252, 228, 149)"
+                  maximumTrackTintColor="#d3d3d3"
+                  minimumTrackTintColor="rgb(252, 228, 149)"
+                />
+                <Text style={[styles.sliderLabels, styles.rightSliderLabel]}>
+                  5000
+                </Text>
+              </View>
+              <Text style={styles.sliderValue}>{this.state.sliderValue}</Text>
+            </View>
+          )}
         </View>
 
         <RecipesList
@@ -148,12 +210,13 @@ const styles = StyleSheet.create({
     position: "relative",
     alignItems: "center"
   },
-  textinput_wrapper: {
+  text_input_wrapper: {
     zIndex: 10,
+    flex: 1,
     width: wp("95%"),
     position: "absolute",
     top: 0,
-    flexDirection: "row",
+    // flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 15,
     marginTop: 15,
@@ -167,12 +230,55 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 10
   },
-  textinput: {
+  text_input: {
     marginLeft: 5,
     marginRight: 5,
     height: 50,
     width: "100%",
     paddingLeft: 5
+  },
+  slider_input_text: {
+    marginBottom: 15
+  },
+  sliderInput: {
+    width: "80%",
+    height: 50,
+    borderBottomColor: "rgb(252, 228, 149)",
+    borderWidth: 0,
+    borderBottomWidth: 1,
+    paddingLeft: 5
+  },
+  slider_input_wrapper: {
+    zIndex: 10,
+    width: wp("95%"),
+    // position: "absolute",
+    // top: 100,
+    alignItems: "center",
+    // marginHorizontal: 15,
+    marginTop: 15
+    // backgroundColor: colors.white,
+    // borderRadius: 35,
+    // paddingHorizontal: 25,
+    // paddingVertical: 5,
+    // elevation: 10,
+    // shadowColor: colors.black,
+    // shadowOffset: { width: 20, height: 20 },
+    // shadowOpacity: 0.15,
+    // shadowRadius: 10
+  },
+  sliderLabels: {
+    color: "#d3d3d3"
+  },
+  leftSliderLabel: {
+    marginRight: 15
+  },
+  rightSliderLabel: {
+    marginRight: 15
+  },
+  sliderValue: {
+    color: "rgb(252, 228, 149)",
+    fontWeight: "bold",
+    marginTop: 15
   },
   loading_container: {
     position: "absolute",
