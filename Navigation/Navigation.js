@@ -29,7 +29,19 @@ const SearchStackNavigator = createStackNavigator({
     }
   },
   RecipeDetail: {
-    screen: RecipeDetail
+    screen: RecipeDetail,
+    navigationOptions: {
+      title: "Détail de la recette",
+      headerStyle: {
+        backgroundColor: colors.turquoiseGreen
+      },
+      headerTintColor: colors.white,
+      headerTitleStyle: {
+        fontSize: 20,
+        color: colors.white,
+        fontWeight: "bold"
+      }
+    }
   }
 });
 const FavoritesStackNavigator = createStackNavigator({
@@ -49,7 +61,19 @@ const FavoritesStackNavigator = createStackNavigator({
     }
   },
   RecipeDetail: {
-    screen: RecipeDetail
+    screen: RecipeDetail,
+    navigationOptions: {
+      title: "Rechercher une recette",
+      headerStyle: {
+        backgroundColor: colors.turquoiseGreen
+      },
+      headerTintColor: colors.white,
+      headerTitleStyle: {
+        fontSize: 20,
+        color: colors.white,
+        fontWeight: "bold"
+      }
+    }
   }
 });
 
